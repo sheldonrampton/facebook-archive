@@ -1,3 +1,27 @@
+# What's new in this fork
+This is a fork of the facebook-archive project, with some added code
+to do some NLP processing of a Facebook archive. The new stuff is in
+the following files:
+* parse_posts.js
+* generate_training_set.py
+
+To run the new stuff, you'll need node.js installed as well as Python.
+You'll also need to install some Node and Python packages:
+
+```
+# Node packages
+npm install --save yargs
+npm install --save python-shell
+# Python packages
+pip install sys
+pip install json
+pip install nltk
+
+```
+
+You'll also need to install data for the NLTK toolkit. For instructions see:
+https://www.nltk.org/data.html
+
 # facebook-archive
 [![forthebadge](http://forthebadge.com/images/badges/made-with-python.svg)](http://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/for-you.svg)](https://forthebadge.com)
 

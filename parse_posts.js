@@ -1,3 +1,32 @@
+/**
+ * Copyright 2017, Sheldon Rampton.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/**
+ * This is a utility script to extract information from a Facebook archive
+ * of user posts. It parses out the JSON data from the archive to create a
+ * simplified JSON structure, which it then feeds to a Python script named
+ * generate_training_set.py. The Python script uses Python's Natural Language
+ * Toolkit (nltk) to break each post down into individual sentences, which
+ * it then outputs as a single line of JSON-encoded data that can serve
+ * as a row in a training dataset for the cakechat bot:
+ *   https://github.com/lukalabs/cakechat.git
+ *
+ * USAGE:
+ *   node parse_posts.js -f facebook.json 
+ */
+
 const yargs = require('yargs');
 let {PythonShell} = require('python-shell');
 
@@ -9,18 +38,18 @@ const argv = yargs
       describe: 'JSON file to load',
       string: true
     },
-    k: {
-      demand: false,
-      alias: 'key',
-      describe: 'Key to output',
-      string: true
-    },
-    d: {
-      demand: false,
-      alias: 'datatype',
-      describe: 'Datatype to output',
-      string: true
-    },
+    // k: {
+    //   demand: false,
+    //   alias: 'key',
+    //   describe: 'Key to output',
+    //   string: true
+    // },
+    // d: {
+    //   demand: false,
+    //   alias: 'datatype',
+    //   describe: 'Datatype to output',
+    //   string: true
+    // },
     v: {
       demand: false,
       alias: 'verbose',
@@ -34,6 +63,24 @@ const argv = yargs
 
 const fs = require('fs');
 
+/**
+ * simplifytPosts
+ * 
+ * Parses a Facebook posts archive (JSON format) into a
+ * simplified structure. 
+ *
+ * Arguments:
+ * - file (string): the name of the Facebook posts archive file.
+ * 
+ * Return:
+ *   JSON text for an array, with the following values for each post:
+ *   - timestamp: the timestamp for the post
+ *.  - url: a URL for the post (optional)
+ *   - category: the source or author of the post
+ *.  - description: a description of the post. In some cases, this may
+ *.    be identical to the post text.
+ *.  - post: the actual text of the post
+ */
 const simplifyPosts = (file) => {
   var postsOut = [];
   if (argv.file) {
@@ -158,17 +205,14 @@ const simplifyPosts = (file) => {
 }
 
 simplified = simplifyPosts(argv.file);
-
-
+// Create a python shell to run the script that breaks each
+// post into sentences.
 let pyshell = new PythonShell('generate_training_set.py');
-
 pyshell.send(JSON.stringify(simplified));
-
 pyshell.on('message', function (message) {
   // received a message sent from the Python script (a simple "print" statement)
   console.log(message);
 });
-
 pyshell.end(function (err,code,signal) {
   if (err) throw err;
 });
