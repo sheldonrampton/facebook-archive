@@ -1,4 +1,5 @@
 const yargs = require('yargs');
+let {PythonShell} = require('python-shell');
 
 const argv = yargs
   .options({
@@ -120,19 +121,6 @@ const simplifyPosts = (file) => {
               break;
           }
         });
-
-        // if (Object.keys(post['attachments'][0]['data'][0]) == argv.datatype) {
-        //   console.log(JSON.stringify(post['attachments'][0]['data'][0][argv.datatype], null, 2));
-        // }
-
-        // console.log(JSON.stringify(post, null, 2));
-        // console.log(JSON.stringify(Object.keys(post['attachments'][0]['attachments'][0]), null, 2));
-        // if (typeof(date_keys[Object.keys(post['attachments'][0]['data'][0])]) == "undefined") {
-        //   date_keys[Object.keys(post['attachments'][0]['data'][0])] = 1;
-        // }
-        // else {
-        //   date_keys[Object.keys(post['attachments'][0]['data'][0])] += 1;
-        // }
       }
       if (typeof(post['data']) != "undefined" && typeof(post['data'][0]) != "undefined"
               && typeof(post['data'][0]['post']) != "undefined") {
@@ -160,20 +148,7 @@ const simplifyPosts = (file) => {
           });
         }
 
-        // console.log(`POST: ${post['data'][0]['post']}`);
       }
-      // if (argv.key == 'title') {
-      //   if (typeof(post[argv.key]) != "undefined"
-      //     ) {
-      //       console.log(JSON.stringify(post[argv.key], null, 2));
-      //   }
-      // }
-      // if (argv.key == 'tags') {
-      //   if (typeof(post[argv.key]) != "undefined"
-      //     ) {
-      //       console.log(JSON.stringify(post[argv.key], null, 2));
-      //   }
-      // }
     });
   }
   if (argv.verbose) {
@@ -182,4 +157,18 @@ const simplifyPosts = (file) => {
   return postsOut;
 }
 
-simplifyPosts(argv.file);
+simplified = simplifyPosts(argv.file);
+
+
+let pyshell = new PythonShell('generate_training_set.py');
+
+pyshell.send(JSON.stringify(simplified));
+
+pyshell.on('message', function (message) {
+  // received a message sent from the Python script (a simple "print" statement)
+  console.log(message);
+});
+
+pyshell.end(function (err,code,signal) {
+  if (err) throw err;
+});
